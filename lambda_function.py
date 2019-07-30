@@ -4,12 +4,16 @@ import ipaddress
 
 def lambda_handler(event, context):
     #Logic goes here. The below code is just a dummy.
-    if (validate_ipaddress(event['queryStringParameters']['ip']) == False):
+
+    ip = event['headers']['X-Forwarded-For']
+    if (validate_ipaddress(ip) == False):
         return {
-            'statusCode': 200,
-            'body': json.dumps("https://www.abhaisasidharan.xyz")
+            'statusCode': 302,
+            'headers': {
+                "Location" : "https://www.abhaisasidharan.xyz"
+            }
         }
-    result = os.popen("curl https://ipinfo.io/" + event['queryStringParameters']['ip']).read()
+    result = os.popen("curl https://ipinfo.io/" + ip).read()
     sites = dict([('IN', 'react.abhaisasidharan.xyz'), ('US', 'ng.abhaisasidharan.xyz'), ('any', 'vue.abhaisasidharan.xyz')])
     result_json = json.loads(result)
     
@@ -21,8 +25,10 @@ def lambda_handler(event, context):
         redirect_to = 'https://vue.abhaisasidharan.xyz'
 
     return {
-        'statusCode': 200,
-        'body': json.dumps(redirect_to)
+        'statusCode': 302,
+        'headers': {
+            "Location" : redirect_to
+        }
     }
     
 def validate_ipaddress(ip):
